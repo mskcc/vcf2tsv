@@ -237,6 +237,7 @@ class MutectParser(VcfParser):
     uniques.append(self.extraInfo[rec.CHROM + "_" + str(rec.POS)][1])
     uniques.append(self.extraInfo[rec.CHROM + "_" + str(rec.POS)][2])
     uniques.append(self.extraInfo[rec.CHROM + "_" + str(rec.POS)][3])
+    uniques.append(self.extraInfo[rec.CHROM + "_" + str(rec.POS)][4])
     return map(str, uniques)
 
 
@@ -251,6 +252,7 @@ class MutectParser(VcfParser):
     uniq_infos.append("MUT_COVERED")
     uniq_infos.append("MUT_KEEP")
     uniq_infos.append("MUT_MQ0_READS")
+    uniq_infos.append("MUT_CONTEXT5")
     return uniq_infos
 
   def parseAdditionalFile(self, mutectText):
@@ -265,12 +267,13 @@ class MutectParser(VcfParser):
       mutCover = header.index("covered")
       mutKeep = header.index("judgement")
       mq0 = header.index("map_Q0_reads")
+      context5 = header.index("context")
       for line in mt:
         if line[0] == "#":
           continue
         F = line.strip().split("\t")
         key = F[0] + "_" + F[1]
-        self.extraInfo[key] = (F[mutFilter], F[mutCover], F[mutKeep], str(F[mq0]))
+        self.extraInfo[key] = (F[mutFilter], F[mutCover], F[mutKeep], str(F[mq0]), F[context5])
 
   def parse(self, generalizedRead, fileOut):
     return VcfParser.parse(self, MutectRead, fileOut)
