@@ -38,7 +38,7 @@ if len(sys.argv) <= 1:
 -n, --normal: the sample name of the NORMAL. Required for somatic callers. Only useful for certain somatic callers.
 -t, --tumor: the sample name of the TUMOR. Required for somatic callers. Only useful for certain somatic callers.i
 -v, --verbose: If specified, create a verbose maf that includes vcf entries with no reads""", file=sys.stderr)
-    sys.exit()
+    sys.exit(64)
 if callers.has_key(args.caller):
     1 
 else:
@@ -46,17 +46,17 @@ else:
     choices.sort()
     choices = ",".join(choices) 
     print("The caller", args.caller, "is not a valid choice. Valid caller options are: ", choices, file=sys.stderr)
-    sys.exit()
+    sys.exit(64)
 
 if args.inputFile:
     input=args.inputFile
 else:
     print("This version of the caller requires an input file, provided with the -i flag.", file=sys.stderr)
-    sys.exit()
+    sys.exit(64)
 
 if callers[args.caller] in somaticCallers and not (args.tumor and args.normal):
     print("For a somatic caller, you must give the tumor and normal with the -t and -n arguments", file=sys.stderr)
-    sys.exit()
+    sys.exit(64)
 
 if args.outputFile:
     output=args.outputFile
@@ -70,7 +70,8 @@ pairMap=None
 if args.pairing:
     pairMap=VcfParser.VcfParser.parsePairFile(args.pairing)
     if not pairMap:
-      sys.exit()
+      print("ERROR: Pairing file creates a null mapping")
+      sys.exit(78)
 fo = sys.stdout
 if output != "stdout":
     fo = open(output, 'w')
@@ -82,6 +83,7 @@ sample_fields=["GT","GQ","ALT_FREQ","AD_REF","AD_ALT"]
 portal_fields=["Mutation_Status","Validation_Status"]
 
 parser = None
+
 
 if callers[args.caller] == "MUT":
   parser = VcfParser.MutectParser(fi, pairMap, args.tumor, args.normal )
@@ -113,7 +115,6 @@ sample_fields.append("CALLER")
 mafout.writerow(header+sample_fields+uniq_infos+uniq_formats+sample_uniq_formats+portal_fields)
 
 parser.parse(GeneralizedRead, fo)
-
 
 fi.close()
 if output != "stdout":
